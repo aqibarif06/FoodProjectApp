@@ -1,0 +1,41 @@
+.admin-orders-container {
+    width: 95%;
+    margin: 40px auto;
+  }
+  
+  .admin-orders-title {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+  }
+  
+  .admin-orders-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .admin-orders-summary h4 {
+    margin: 0;
+  }
+  
+  .admin-status-processing {
+    color: #ff9800;
+    font-weight: 600;
+  }
+  
+  .admin-status-delivered {
+    color: green;
+    font-weight: 600;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .admin-orders-summary {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
