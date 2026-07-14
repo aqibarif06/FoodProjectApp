@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+
 import ReviewModal from "./ReviewModal";
+import api from "../utils/api";
 
 import {
   getMenus,
@@ -50,7 +51,8 @@ const Menu = () => {
     description: "",
     stock: "",
     imageUrl: "",
-  
+
+    aiDescription: "",
     aiTags: [],
     aiAllergens: [],
     aiServes: "",
@@ -101,14 +103,13 @@ const Menu = () => {
         restaurant: id,
       };
 
-      const { data } = await axios.post(
-        "/api/v1/eats/item",
+      const { data } = await api.post(
+        "/v1/eats/item",
         payload,
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 
@@ -120,6 +121,12 @@ const Menu = () => {
         description: "",
         stock: "",
         imageUrl: "",
+
+        aiDescription: "",
+        aiTags: [],
+        aiAllergens: [],
+        aiServes: "",
+        aiBestFor: [],
       });
 
       return createdFoodItem;
@@ -187,11 +194,8 @@ const Menu = () => {
     }
 
     try {
-      await axios.delete(
-        `/api/v1/eats/stores/${id}/menus/${menuIdToDelete}`,
-        {
-          withCredentials: true,
-        }
+      await api.delete(
+        `/v1/eats/stores/${id}/menus/${menuIdToDelete}`
       );
 
       dispatch(getMenus(id));
@@ -219,34 +223,31 @@ const Menu = () => {
     }
 
     try {
-      const { data } = await axios.post(
-        "/api/v1/ai/generate-food-ai",
+      const { data } = await api.post(
+        "/v1/ai/generate-food-ai",
         {
           name: newFood.name,
           category: itemToAdd.category || "",
           spiceLevel: "Medium",
           price: Number(newFood.price) || 0,
-        },
-        {
-          withCredentials: true,
         }
       );
 
       setNewFood((previousFood) => ({
         ...previousFood,
-      
+
         // Normal description shown to customers
         description: data.data.description,
-      
+
         // AI metadata
         aiDescription: data.data.description,
-      
+
         aiTags: data.data.tags || [],
-      
+
         aiAllergens: data.data.allergens || [],
-      
+
         aiServes: data.data.serves || "",
-      
+
         aiBestFor: data.data.bestFor || [],
       }));
     } catch (err) {
@@ -267,10 +268,11 @@ const Menu = () => {
       {/* REVIEW BUTTON */}
 
       {!loading && (
-      <div className="mb-4">
-      <ReviewModal restaurantId={id} />
-      </div>
-    )}
+        <div className="mb-4">
+          <ReviewModal restaurantId={id} />
+        </div>
+      )}
+
       {loading ? (
         <p>Loading menus...</p>
       ) : error ? (
@@ -414,10 +416,12 @@ const Menu = () => {
                 <select
                   value={itemToAdd.category}
                   onChange={(e) =>
-                    setItemToAdd((previousItem) => ({
-                      ...previousItem,
-                      category: e.target.value,
-                    }))
+                    setItemToAdd(
+                      (previousItem) => ({
+                        ...previousItem,
+                        category: e.target.value,
+                      })
+                    )
                   }
                   required
                 >
