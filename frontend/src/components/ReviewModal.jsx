@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+
+import api from "../utils/api";
 
 const ReviewModal = ({ restaurantId }) => {
   const [show, setShow] = useState(false);
@@ -10,22 +11,28 @@ const ReviewModal = ({ restaurantId }) => {
 
   const [comment, setComment] = useState("");
 
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  // ======================================================
+  // SUBMIT REVIEW
+  // ======================================================
+
   const submitReview = async () => {
-    if (!name || !comment) {
+    if (!name.trim() || !comment.trim()) {
       alert("Please fill all fields");
       return;
     }
 
     try {
-      await axios.put(
-        `/api/v1/ai/stores/${restaurantId}/review`,
+      setSubmitting(true);
+
+      await api.put(
+        `/v1/ai/stores/${restaurantId}/review`,
         {
-          name,
+          name: name.trim(),
           rating: Number(rating),
-          Comment: comment,
-        },
-        {
-          withCredentials: true,
+          Comment: comment.trim(),
         }
       );
 
@@ -39,15 +46,20 @@ const ReviewModal = ({ restaurantId }) => {
 
       setComment("");
 
-      // Refresh page so AI summary updates
+      // Refresh so restaurant and AI summary update
       window.location.reload();
     } catch (err) {
-      console.error(err);
+      console.error(
+        "Unable to add review:",
+        err
+      );
 
       alert(
         err.response?.data?.message ||
           "Unable to add review"
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -121,13 +133,17 @@ const ReviewModal = ({ restaurantId }) => {
             <button
               className="btn btn-success me-2"
               onClick={submitReview}
+              disabled={submitting}
             >
-              Submit
+              {submitting
+                ? "Submitting..."
+                : "Submit"}
             </button>
 
             <button
               className="btn btn-secondary"
               onClick={() => setShow(false)}
+              disabled={submitting}
             >
               Cancel
             </button>
